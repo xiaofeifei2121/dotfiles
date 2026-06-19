@@ -17,8 +17,8 @@ cd ~/dotfiles && bash bootstrap.sh
 
 ## Windows 还原
 ```powershell
-cd C:\Users\qiwan\dotfiles
-.\windows\bootstrap.ps1
+git clone <仓库地址> ~/dotfiles
+cd ~/dotfiles && .\windows\bootstrap.ps1
 ```
 
 `windows/bootstrap.ps1` 会把当前 `$PROFILE` 和 `~\.config\starship.toml` 软链接到仓库。
