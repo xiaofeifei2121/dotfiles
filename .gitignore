@@ -7,8 +7,6 @@
 **/*.pem
 *.local
 
-# === 代理配置(公开仓库默认排除,想管就删掉这行) ===
-mac/zsh/.proxyrc
 
 # === karabiner 自动备份,无需纳管 ===
 mac/karabiner/.config/karabiner/automatic_backups/

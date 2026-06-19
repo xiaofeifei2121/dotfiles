@@ -1,0 +1,112 @@
+# ~/.proxyrc
+# 通用代理控制脚本（Clash + npm + git）
+# 维护者：taqi
+
+# === 主代理端口（按需修改）===
+PROXY_PORT=6152
+
+# === 终端代理 ===
+
+proxy-on() {
+  export http_proxy="http://127.0.0.1:$PROXY_PORT"
+  export https_proxy="http://127.0.0.1:$PROXY_PORT"
+  export all_proxy="socks5://127.0.0.1:$PROXY_PORT"
+  echo "✅ 终端代理已开启 (端口: $PROXY_PORT)"
+}
+
+proxy-off() {
+  unset http_proxy https_proxy all_proxy
+  echo "🟢 终端代理已关闭"
+}
+
+# === npm 代理 ===
+
+npm-proxy-on() {
+  npm config set proxy "http://127.0.0.1:$PROXY_PORT"
+  npm config set https-proxy "http://127.0.0.1:$PROXY_PORT"
+  echo "✅ npm 代理已开启 (端口: $PROXY_PORT)"
+}
+
+npm-proxy-off() {
+  npm config delete proxy 2>/dev/null
+  npm config delete https-proxy 2>/dev/null
+  echo "🟢 npm 代理已关闭"
+}
+
+# === Git 代理 ===
+
+# 只代理 GitHub（推荐）
+proxy-gh-on() {
+  git config --global http.https://github.com.proxy "http://127.0.0.1:$PROXY_PORT"
+  echo "✅ GitHub 代理已开启 (端口: $PROXY_PORT)"
+}
+
+# 代理所有 git（慎用，内网会出问题）
+proxy-git-on() {
+  git config --global http.proxy "http://127.0.0.1:$PROXY_PORT"
+  echo "✅ Git 全局代理已开启 (端口: $PROXY_PORT)"
+}
+
+proxy-git-off() {
+  git config --global --unset-all http.proxy 2>/dev/null
+  git config --global --unset-all http.https://github.com.proxy 2>/dev/null
+  echo "🟢 Git 代理已关闭"
+}
+
+proxy-git-show() {
+  git config --global --list | grep proxy || echo "未设置"
+}
+
+# === 一键全开 / 全关 ===
+
+proxy-all-on() {
+  proxy-on
+  npm-proxy-on
+  proxy-gh-on
+  echo "🚀 所有代理已开启"
+}
+
+proxy-all-off() {
+  proxy-off
+  npm-proxy-off
+  proxy-git-off
+  echo "🔴 所有代理已关闭"
+}
+
+# === 状态查看 ===
+
+proxy-state() {
+  local npm_proxy
+  npm_proxy=$(npm config get proxy 2>/dev/null)
+  [ "$npm_proxy" = "null" ] && npm_proxy="未设置"
+
+  echo "============================="
+  echo "终端:     ${http_proxy:-未设置}"
+  echo "npm 代理: $npm_proxy"
+  echo "npm 源:   $(npm config get registry)"
+  echo "Git:      $(git config --global --list | grep proxy || echo '未设置')"
+  echo "============================="
+}
+
+# === npm registry ===
+
+npm-cn() {
+  npm config set registry https://registry.npmmirror.com
+  npm config delete proxy 2>/dev/null
+  npm config delete https-proxy 2>/dev/null
+  echo "🇨🇳 npm 已切换至国内镜像（npmmirror）"
+}
+
+npm-official() {
+  npm config set registry https://registry.npmjs.org
+  echo "🌍 npm 已切换至官方源"
+}
+
+npm-auto() {
+  echo "🔍 检测网络..."
+  if curl -s --connect-timeout 5 --max-time 8 https://registry.npmjs.org -o /dev/null; then
+    npm-official
+  else
+    npm-cn
+  fi
+}
