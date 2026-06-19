@@ -1,0 +1,9 @@
+# winget 软件清单(大件:运行时 / 字体 / 编辑器等)
+# 一行一个 winget 包 ID,# 开头为注释,bootstrap.ps1 会逐行 winget install
+# 查准确 ID:winget search <名字>
+
+Starship.Starship                          # 跨 shell 提示符(profile 已引用)
+Git.Git                                     # Git
+OpenJS.NodeJS.LTS                           # Node.js LTS
+Python.Python.3.13                          # Python 3.13
+DEVCOM.JetBrainsMonoNerdFont                # JetBrains Mono Nerd Font(starship 图标需要)
