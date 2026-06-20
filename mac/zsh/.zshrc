@@ -1,9 +1,9 @@
 # >>> ghost-complete initialize >>>
 # !! Contents within this block are managed by 'ghost-complete install' !!
-if [[ -f '/Users/taqibe/.config/ghost-complete/shell/init.zsh' ]]; then
-  builtin source '/Users/taqibe/.config/ghost-complete/shell/init.zsh'
+if [[ -f "$HOME/.config/ghost-complete/shell/init.zsh" ]]; then
+  builtin source "$HOME/.config/ghost-complete/shell/init.zsh"
 else
-  echo "ghost-complete: init script missing: "'/Users/taqibe/.config/ghost-complete/shell/init.zsh' >&2
+  echo "ghost-complete: init script missing: ""$HOME/.config/ghost-complete/shell/init.zsh" >&2
   echo "ghost-complete: run 'ghost-complete install' to restore it" >&2
 fi
 # <<< ghost-complete initialize <<<
