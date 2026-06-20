@@ -1,12 +1,33 @@
 #!/usr/bin/env bash
 # 新 Mac 初始化脚本:克隆本仓库后,在 ~/dotfiles 里跑 bash bootstrap.sh
-set -e
+set -uo pipefail
+DIR="$(cd "$(dirname "$0")" && pwd)"
 
 echo "==> 1. 安装 Homebrew(如未安装)"
 command -v brew >/dev/null || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-echo "==> 2. 用 Brewfile 还原所有软件"
-brew bundle --file="$(dirname "$0")/Brewfile"
+echo "==> 2. 选择并安装软件"
+command -v gum >/dev/null || brew install gum
+LIST="$( { echo "ALL ✅ 全部安装(等于 brew bundle)";
+           grep -E '^(brew|cask) ' "$DIR/Brewfile" \
+             | sed -E 's/^(brew|cask) "([^"]+)".*/\1 \2/'; } )"
+SELECTED="$(echo "$LIST" | gum choose --no-limit --height 25 \
+  --header "空格选择 / 回车确认 / Ctrl-C 跳过安装")"
+if [ -z "$SELECTED" ]; then
+  echo "    未选择,跳过软件安装"
+elif echo "$SELECTED" | grep -q "^ALL "; then
+  echo "    安装全部(brew bundle)"
+  brew bundle --file="$DIR/Brewfile" || echo "    ⚠️ 部分软件未装成功,可稍后手动补装"
+else
+  echo "$SELECTED" | while read -r type name; do
+    [ "$type" = "ALL" ] && continue
+    if [ "$type" = "cask" ]; then
+      echo "    cask: $name"; brew install --cask "$name" || echo "      ⚠️ $name 跳过"
+    else
+      echo "    brew: $name"; brew install "$name" || echo "      ⚠️ $name 跳过"
+    fi
+  done
+fi
 
 echo "==> 3. 安装 oh-my-zsh(如未安装)"
 [ -d "$HOME/.oh-my-zsh" ] || sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
@@ -35,7 +56,7 @@ fi
 
 echo "==> 6. 用 stow 链接配置"
 brew install stow 2>/dev/null || true
-cd "$(dirname "$0")/mac"
+cd "$DIR/mac"
 stow -t ~ zsh starship karabiner
 read -r -p "    是否链接 git 配置(.gitconfig)? 新机器/共用机器建议跳过 [y/N] " ans
 if [[ "$ans" =~ ^[Yy]$ ]]; then
